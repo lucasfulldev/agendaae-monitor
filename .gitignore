@@ -1,0 +1,7 @@
+.env
+*.credentials
+.panel-credentials
+netdata/go.d/postgres.local.conf
+*.pem
+*.key
+.DS_Store

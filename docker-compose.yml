@@ -1,0 +1,40 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3005:3001"
+    volumes:
+      - uptime-kuma-data:/app/data
+
+  netdata:
+    image: netdata/netdata:stable
+    container_name: netdata
+    hostname: agendaae-kvm2
+    restart: unless-stopped
+    pid: host
+    ports:
+      - "127.0.0.1:19999:19999"
+    cap_add:
+      - SYS_PTRACE
+      - SYS_ADMIN
+    security_opt:
+      - apparmor:unconfined
+    volumes:
+      - netdatalib:/var/lib/netdata
+      - netdatacache:/var/cache/netdata
+      - ./netdata/netdata.conf:/etc/netdata/netdata.conf:ro
+      - ./netdata/go.d/postgres.conf:/etc/netdata/go.d/postgres.conf:ro
+      - /etc/passwd:/host/etc/passwd:ro
+      - /etc/group:/host/etc/group:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /etc/os-release:/host/etc/os-release:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /:/host/root:ro,rslave
+
+volumes:
+  uptime-kuma-data:
+  netdatalib:
+  netdatacache:
