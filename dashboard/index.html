@@ -276,6 +276,20 @@
       return labels.reduce((acc, label) => acc + (Number(latest(chartJson, label)) || 0), 0);
     }
 
+    function sumAllDimensions(chartJson) {
+      const labels = chartJson.labels || [];
+      const row = chartJson.data?.[0] || [];
+      return labels.slice(1).reduce((acc, _, i) => acc + (Number(row[i + 1]) || 0), 0);
+    }
+
+    function labelValue(chartJson, candidates) {
+      for (const name of candidates) {
+        const value = latest(chartJson, name);
+        if (value != null) return Number(value) || 0;
+      }
+      return 0;
+    }
+
     function drawSpark(svgId, values, color) {
       const svg = $(svgId);
       if (!values.length) { svg.innerHTML = ""; return; }
@@ -332,29 +346,30 @@
           api("/api/v1/charts"),
         ]);
 
-        const free = Number(latest(ram, "free")) || 0;
-        const used = Number(latest(ram, "used")) || 0;
-        const cached = Number(latest(ram, "cached")) || 0;
-        const buffers = Number(latest(ram, "buffers")) || 0;
+        const free = labelValue(ram, ["free"]);
+        const used = labelValue(ram, ["used"]);
+        const cached = labelValue(ram, ["cached"]);
+        const buffers = labelValue(ram, ["buffers"]);
         const total = free + used + cached + buffers;
         const usedPct = total > 0 ? (used / total) * 100 : 0;
         $("ramText").textContent = usedPct.toFixed(1) + "%";
         $("ramSub").textContent = fmtBytes(used * 1024 * 1024) + " de " + fmtBytes(total * 1024 * 1024);
         setBar("ramBar", usedPct);
 
-        const idle = Number(latest(cpu, "idle")) || 0;
-        const cpuPct = Math.max(0, Math.min(100, 100 - idle));
+        // Netdata system.cpu já vem sem idle: soma das dimensões = % usado
+        const cpuPct = Math.max(0, Math.min(100, sumAllDimensions(cpu)));
         $("cpuText").textContent = cpuPct.toFixed(1) + "%";
-        $("cpuSub").textContent = "não ociosa no host";
+        $("cpuSub").textContent = "uso total do host";
         setBar("cpuBar", cpuPct);
 
-        const avail = Number(latest(disk, "avail")) || 0;
-        const usedDisk = Number(latest(disk, "used")) || 0;
-        const reserved = Number(latest(disk, "reserved_for_root")) || 0;
+        const avail = labelValue(disk, ["avail"]);
+        const usedDisk = labelValue(disk, ["used"]);
+        const reserved = labelValue(disk, ["reserved for root", "reserved_for_root"]);
         const diskTotal = avail + usedDisk + reserved;
         const diskPct = diskTotal > 0 ? (usedDisk / diskTotal) * 100 : 0;
         $("diskText").textContent = diskPct.toFixed(1) + "%";
-        $("diskSub").textContent = fmtBytes(usedDisk * 1024 * 1024) + " usados";
+        // disk_space do Netdata reporta em GiB
+        $("diskSub").textContent = usedDisk.toFixed(1) + " GiB de " + diskTotal.toFixed(1) + " GiB";
         setBar("diskBar", diskPct);
 
         // Network: prefer physical iface; fallback eth0/ens
