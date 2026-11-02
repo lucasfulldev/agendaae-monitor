@@ -60,7 +60,8 @@
     .dot.bad { background: var(--danger); }
     .view { min-height: 0; height: 100%; display: none; overflow: auto; }
     .view.active { display: block; }
-    .view.kuma-view.active { display: grid; }
+    .view.kuma-view.active,
+    .view.logs-view.active { display: grid; }
     .wrap { max-width: 1400px; margin: 0 auto; padding: 12px; }
     .section {
       margin-bottom: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
@@ -110,12 +111,15 @@
     .badge.up { background: rgba(34,197,94,.2); color: #4ade80; }
     .badge.down { background: rgba(239,68,68,.2); color: #f87171; }
     .badge.pending { background: rgba(245,158,11,.2); color: #fbbf24; }
-    .kuma-view { grid-template-rows: 36px 1fr; }
-    .kuma-toolbar {
+    .kuma-view,
+    .logs-view { grid-template-rows: 36px 1fr; }
+    .kuma-toolbar,
+    .logs-toolbar {
       display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
       border-bottom: 1px solid var(--line); background: #0d131b; color: var(--muted); font-size: .75rem;
     }
-    .kuma-view iframe { width: 100%; height: 100%; border: 0; background: #0b0f14; }
+    .kuma-view iframe,
+    .logs-view iframe { width: 100%; height: 100%; border: 0; background: #0b0f14; }
     .error {
       display: none; margin-bottom: 8px; padding: 8px 10px; border-radius: 8px;
       border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.1); color: #fecaca; font-size: .8rem;
@@ -144,6 +148,7 @@
       <nav class="tabs">
         <button class="tab active" data-view="overview" type="button">Overview</button>
         <button class="tab" data-view="kuma" type="button">Uptime Kuma</button>
+        <button class="tab" data-view="logs" type="button">Logs</button>
       </nav>
       <div class="meta">
         <div class="pill" id="clock">--:--:--</div>
@@ -213,12 +218,21 @@
       </div>
       <iframe id="kumaFrame" title="Uptime Kuma" src="about:blank"></iframe>
     </section>
+
+    <section class="view logs-view" id="view-logs">
+      <div class="logs-toolbar">
+        <span id="logsStatus">Logs ao vivo dos containers (Dozzle)</span>
+        <span>mesmo login · sem senha extra</span>
+      </div>
+      <iframe id="logsFrame" title="Logs Docker" src="about:blank"></iframe>
+    </section>
   </div>
 
   <script>
     const $ = (id) => document.getElementById(id);
     let kumaReady = false;
     let kumaLoading = false;
+    let logsReady = false;
 
     function setTone(el, pct) {
       el.classList.remove("ok", "warn", "bad");
@@ -431,8 +445,19 @@
         document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
         $("view-" + tab.dataset.view).classList.add("active");
         if (tab.dataset.view === "kuma") openKuma();
+        if (tab.dataset.view === "logs") openLogs();
       });
     });
+
+    function openLogs() {
+      if (logsReady) return;
+      $("logsStatus").textContent = "Carregando logs…";
+      $("logsFrame").src = "/logs/";
+      $("logsFrame").addEventListener("load", () => {
+        $("logsStatus").textContent = "Logs ao vivo dos containers (Dozzle)";
+        logsReady = true;
+      }, { once: true });
+    }
 
     function tick() {
       $("clock").textContent = new Date().toLocaleTimeString("pt-BR", { hour12: false });

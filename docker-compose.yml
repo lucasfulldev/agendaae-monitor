@@ -34,6 +34,18 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /:/host/root:ro,rslave
 
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    restart: unless-stopped
+    environment:
+      - DOZZLE_BASE=/logs
+      - DOZZLE_NO_ANALYTICS=true
+    ports:
+      - "127.0.0.1:9999:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
 volumes:
   uptime-kuma-data:
   netdatalib:
