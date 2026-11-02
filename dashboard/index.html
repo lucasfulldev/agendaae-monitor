@@ -6,252 +6,240 @@
   <title>AgendaAE · Monitor</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #08111f;
-      --panel: #0f1a2c;
-      --panel-2: #152238;
-      --line: #243552;
-      --text: #edf3ff;
-      --muted: #8fa3bf;
-      --accent: #2dd4bf;
-      --accent-2: #38bdf8;
-      --ok: #34d399;
-      --warn: #fbbf24;
-      --danger: #fb7185;
+      --bg: #0b0f14;
+      --panel: #111821;
+      --panel-2: #161e29;
+      --line: #243041;
+      --text: #e8eef7;
+      --muted: #8b9bb0;
+      --accent: #3ddc97;
+      --blue: #3b82f6;
+      --cyan: #22d3ee;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --ok: #22c55e;
+      --header: 52px;
     }
     * { box-sizing: border-box; }
-    html, body { margin: 0; min-height: 100%; }
+    html, body { height: 100%; margin: 0; }
     body {
       font-family: "IBM Plex Sans", system-ui, sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(1000px 500px at 0% -10%, rgba(45, 212, 191, 0.12), transparent 50%),
-        radial-gradient(900px 480px at 100% 0%, rgba(56, 189, 248, 0.10), transparent 45%),
-        var(--bg);
+      background: var(--bg);
+      overflow: hidden;
     }
+    .app { height: 100%; display: grid; grid-template-rows: var(--header) 1fr; }
     header {
-      position: sticky; top: 0; z-index: 20;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      padding: 14px 22px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(8, 17, 31, 0.88);
-      backdrop-filter: blur(10px);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 0 14px; border-bottom: 1px solid var(--line); background: #0d131b;
     }
-    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 180px; }
     .mark {
-      width: 30px; height: 30px; border-radius: 9px;
-      background: linear-gradient(145deg, #5eead4, #0f766e);
-      box-shadow: 0 0 0 1px rgba(45,212,191,.35), 0 10px 28px rgba(45,212,191,.18);
+      width: 26px; height: 26px; border-radius: 6px;
+      background: linear-gradient(145deg, #4ade80, #15803d);
     }
-    .brand h1 { margin: 0; font-size: 1rem; letter-spacing: -.02em; }
-    .brand p { margin: 2px 0 0; color: var(--muted); font-size: .72rem; }
-    .header-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .brand h1 { margin: 0; font-size: .92rem; font-weight: 700; letter-spacing: -.02em; }
+    .brand span { color: var(--muted); font-size: .68rem; }
+    .tabs { display: flex; gap: 4px; background: #0a1018; border: 1px solid var(--line); border-radius: 8px; padding: 3px; }
+    .tab {
+      border: 0; background: transparent; color: var(--muted); font: inherit; font-size: .8rem; font-weight: 600;
+      padding: 7px 12px; border-radius: 6px; cursor: pointer;
+    }
+    .tab.active { background: #1a2433; color: var(--text); }
+    .meta { display: flex; gap: 8px; align-items: center; }
     .pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 7px 11px; border-radius: 999px;
-      border: 1px solid var(--line); background: var(--panel);
-      font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: .75rem; color: var(--muted);
+      display: inline-flex; align-items: center; gap: 7px; padding: 5px 9px; border-radius: 999px;
+      border: 1px solid var(--line); background: var(--panel); color: var(--muted);
+      font-family: "IBM Plex Mono", monospace; font-size: .72rem;
     }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--warn); box-shadow: 0 0 0 3px rgba(251,191,36,.15); }
-    .dot.ok { background: var(--ok); box-shadow: 0 0 0 3px rgba(52,211,153,.15); }
-    .dot.bad { background: var(--danger); box-shadow: 0 0 0 3px rgba(251,113,133,.15); }
-    .links a {
-      color: var(--muted); text-decoration: none; font-size: .8rem; font-weight: 600;
-      padding: 8px 12px; border-radius: 999px; border: 1px solid var(--line);
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warn); }
+    .dot.ok { background: var(--ok); }
+    .dot.bad { background: var(--danger); }
+    .view { min-height: 0; height: 100%; display: none; overflow: auto; }
+    .view.active { display: block; }
+    .view.kuma-view.active { display: grid; }
+    .wrap { max-width: 1400px; margin: 0 auto; padding: 12px; }
+    .section {
+      margin-bottom: 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel);
+      overflow: hidden;
     }
-    .links a:hover { color: var(--text); border-color: #3b516f; }
-    main { max-width: 1280px; margin: 0 auto; padding: 22px; }
-    .grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
-    .card {
-      grid-column: span 3;
-      background: linear-gradient(180deg, rgba(255,255,255,.03), transparent 40%), var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      padding: 16px 16px 14px;
-      min-height: 126px;
+    .section-h {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 12px; border-bottom: 1px solid var(--line); background: #0f1620;
     }
-    .card.wide { grid-column: span 6; }
-    .card.full { grid-column: span 12; }
-    .card h2 {
-      margin: 0 0 12px; font-size: .72rem; letter-spacing: .08em;
-      text-transform: uppercase; color: var(--muted); font-weight: 650;
+    .section-h h2 { margin: 0; font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+    .section-b { padding: 10px; }
+    .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+    .stat {
+      background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px;
+      min-height: 78px;
     }
-    .metric {
-      font-family: "IBM Plex Mono", ui-monospace, monospace;
-      font-size: clamp(1.6rem, 3vw, 2rem);
-      font-weight: 650; letter-spacing: -.04em; line-height: 1;
+    .stat.ok { background: rgba(34,197,94,.16); border-color: rgba(34,197,94,.35); }
+    .stat.warn { background: rgba(245,158,11,.14); border-color: rgba(245,158,11,.35); }
+    .stat.bad { background: rgba(239,68,68,.14); border-color: rgba(239,68,68,.35); }
+    .stat label { display: block; color: var(--muted); font-size: .68rem; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .stat strong {
+      display: block; font-family: "IBM Plex Mono", monospace; font-size: 1.35rem; font-weight: 650; letter-spacing: -.03em;
     }
-    .sub { margin-top: 8px; color: var(--muted); font-size: .8rem; }
-    .bar { margin-top: 14px; height: 8px; border-radius: 999px; background: #1a2740; overflow: hidden; }
-    .bar > i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--accent-2), var(--accent)); transition: width .35s ease; }
-    .bar.warn > i { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-    .bar.danger > i { background: linear-gradient(90deg, #e11d48, #fb7185); }
-    table { width: 100%; border-collapse: collapse; font-size: .86rem; }
-    th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid rgba(36,53,82,.85); }
-    th { color: var(--muted); font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 650; }
-    td.mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
-    .name { font-weight: 600; }
-    .muted { color: var(--muted); }
-    .spark {
-      width: 100%; height: 54px; display: block;
+    .stat small { color: var(--muted); font-size: .72rem; }
+    .charts { display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px; }
+    .panel {
+      background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; min-height: 180px;
     }
-    .section-head {
-      grid-column: span 12;
-      display: flex; justify-content: space-between; align-items: end;
-      margin-top: 8px;
+    .panel h3 { margin: 0 0 8px; font-size: .72rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+    svg.spark { width: 100%; height: 120px; display: block; }
+    table { width: 100%; border-collapse: collapse; font-size: .8rem; }
+    th, td { padding: 7px 6px; border-bottom: 1px solid rgba(36,48,65,.9); text-align: left; }
+    th { color: var(--muted); font-size: .66rem; text-transform: uppercase; letter-spacing: .05em; }
+    td.mono { font-family: "IBM Plex Mono", monospace; }
+    .bar { height: 6px; border-radius: 99px; background: #1b2533; overflow: hidden; }
+    .bar > i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--blue), var(--cyan)); }
+    .uptime-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .up-card {
+      border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: #0f1620;
     }
-    .section-head h3 { margin: 0; font-size: 1rem; letter-spacing: -.02em; }
-    .section-head p { margin: 0; color: var(--muted); font-size: .8rem; }
+    .up-card .row { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .up-card .name { font-size: .82rem; font-weight: 600; }
+    .badge {
+      font-family: "IBM Plex Mono", monospace; font-size: .68rem; font-weight: 700;
+      padding: 3px 7px; border-radius: 999px;
+    }
+    .badge.up { background: rgba(34,197,94,.2); color: #4ade80; }
+    .badge.down { background: rgba(239,68,68,.2); color: #f87171; }
+    .badge.pending { background: rgba(245,158,11,.2); color: #fbbf24; }
+    .kuma-view { grid-template-rows: 36px 1fr; }
+    .kuma-toolbar {
+      display: flex; align-items: center; justify-content: space-between; padding: 0 12px;
+      border-bottom: 1px solid var(--line); background: #0d131b; color: var(--muted); font-size: .75rem;
+    }
+    .kuma-view iframe { width: 100%; height: 100%; border: 0; background: #0b0f14; }
     .error {
-      grid-column: span 12;
-      padding: 12px 14px; border-radius: 12px;
-      border: 1px solid rgba(251,113,133,.35);
-      background: rgba(251,113,133,.08); color: #fecdd3;
-      display: none;
+      display: none; margin-bottom: 8px; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid rgba(239,68,68,.4); background: rgba(239,68,68,.1); color: #fecaca; font-size: .8rem;
     }
     .error.show { display: block; }
-    @media (max-width: 960px) {
-      .card, .card.wide { grid-column: span 6; }
+    @media (max-width: 1100px) {
+      .stats { grid-template-columns: repeat(3, 1fr); }
+      .charts, .uptime-grid { grid-template-columns: 1fr; }
     }
-    @media (max-width: 640px) {
-      .card, .card.wide, .card.full { grid-column: span 12; }
-      header { padding: 12px; }
+    @media (max-width: 700px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .brand span { display: none; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <div class="mark" aria-hidden="true"></div>
-      <div>
-        <h1>AgendaAE Monitor</h1>
-        <p>Visão ao vivo do servidor · sem precisar entrar no SSH</p>
-      </div>
-    </div>
-    <div class="header-meta">
-      <div class="pill"><span id="clock">--:--:--</span></div>
-      <div class="pill"><span class="dot" id="healthDot"></span><span id="healthText">conectando</span></div>
-      <div class="links">
-        <a href="https://kuma.agendaae.com" target="_blank" rel="noreferrer">Uptime Kuma</a>
-        <a href="https://portainer.agendaae.com" target="_blank" rel="noreferrer">Portainer</a>
-      </div>
-    </div>
-  </header>
-
-  <main>
-    <div class="grid">
-      <div class="error" id="errorBox"></div>
-
-      <section class="card">
-        <h2>CPU</h2>
-        <div class="metric" id="cpuText">—</div>
-        <div class="bar" id="cpuBar"><i></i></div>
-        <div class="sub" id="cpuSub">carga do host</div>
-      </section>
-
-      <section class="card">
-        <h2>Memória RAM</h2>
-        <div class="metric" id="ramText">—</div>
-        <div class="bar" id="ramBar"><i></i></div>
-        <div class="sub" id="ramSub">uso atual</div>
-      </section>
-
-      <section class="card">
-        <h2>Disco /</h2>
-        <div class="metric" id="diskText">—</div>
-        <div class="bar" id="diskBar"><i></i></div>
-        <div class="sub" id="diskSub">espaço usado</div>
-      </section>
-
-      <section class="card">
-        <h2>Rede</h2>
-        <div class="metric" id="netText">—</div>
-        <svg class="spark" id="netSpark" viewBox="0 0 200 54" preserveAspectRatio="none"></svg>
-        <div class="sub" id="netSub">entrada + saída</div>
-      </section>
-
-      <div class="section-head">
+  <div class="app">
+    <header>
+      <div class="brand">
+        <div class="mark"></div>
         <div>
-          <h3>Serviços que mais consomem</h3>
-          <p>Containers Docker ordenados por memória</p>
-        </div>
-        <p class="muted" id="updatedAt">atualizando…</p>
-      </div>
-
-      <section class="card full">
-        <h2>Top containers</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Container</th>
-              <th>RAM</th>
-              <th>Uso</th>
-              <th>CPU (aprox.)</th>
-            </tr>
-          </thead>
-          <tbody id="containersBody">
-            <tr><td colspan="4" class="muted">Carregando…</td></tr>
-          </tbody>
-        </table>
-      </section>
-
-      <div class="section-head">
-        <div>
-          <h3>PostgreSQL</h3>
-          <p>Conexões, tamanho e ritmo de transações</p>
+          <h1>AgendaAE Monitor</h1>
+          <span>Observabilidade · KVM2</span>
         </div>
       </div>
+      <nav class="tabs">
+        <button class="tab active" data-view="overview" type="button">Overview</button>
+        <button class="tab" data-view="kuma" type="button">Uptime Kuma</button>
+      </nav>
+      <div class="meta">
+        <div class="pill" id="clock">--:--:--</div>
+        <div class="pill"><span class="dot" id="healthDot"></span><span id="healthText">…</span></div>
+      </div>
+    </header>
 
-      <section class="card wide">
-        <h2>Conexões</h2>
-        <div class="metric" id="pgConnText">—</div>
-        <div class="sub" id="pgConnSub">ativas no Postgres</div>
-      </section>
+    <section class="view active" id="view-overview">
+      <div class="wrap">
+        <div class="error" id="errorBox"></div>
 
-      <section class="card wide">
-        <h2>Base empresa</h2>
-        <div class="metric" id="pgSizeText">—</div>
-        <div class="sub" id="pgSizeSub">tamanho em disco</div>
-      </section>
+        <div class="section">
+          <div class="section-h"><h2>Overview</h2><span class="pill" id="updatedAt">—</span></div>
+          <div class="section-b">
+            <div class="stats">
+              <div class="stat" id="cpuStat"><label>CPU</label><strong id="cpuText">—</strong><small id="cpuSub">host</small></div>
+              <div class="stat" id="ramStat"><label>RAM</label><strong id="ramText">—</strong><small id="ramSub">usada</small></div>
+              <div class="stat" id="diskStat"><label>Disco /</label><strong id="diskText">—</strong><small id="diskSub">usado</small></div>
+              <div class="stat" id="netStat"><label>Rede</label><strong id="netText">—</strong><small id="netSub">agora</small></div>
+              <div class="stat" id="loadStat"><label>Load 1m</label><strong id="loadText">—</strong><small id="loadSub">system.load</small></div>
+              <div class="stat" id="upStat"><label>Uptime OK</label><strong id="upText">—</strong><small id="upSub">monitores</small></div>
+            </div>
+          </div>
+        </div>
 
-      <section class="card full">
-        <h2>Transações / segundo · empresa</h2>
-        <svg class="spark" id="pgSpark" viewBox="0 0 600 54" preserveAspectRatio="none"></svg>
-        <div class="sub" id="pgTxSub">leitura das métricas postgres_local</div>
-      </section>
-    </div>
-  </main>
+        <div class="section">
+          <div class="section-h"><h2>Séries</h2></div>
+          <div class="section-b">
+            <div class="charts">
+              <div class="panel">
+                <h3>CPU · últimos minutos</h3>
+                <svg class="spark" id="cpuSpark" viewBox="0 0 600 120" preserveAspectRatio="none"></svg>
+              </div>
+              <div class="panel">
+                <h3>Rede · tráfego</h3>
+                <svg class="spark" id="netSpark" viewBox="0 0 600 120" preserveAspectRatio="none"></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-h"><h2>Status dos serviços</h2><span class="pill">via Kuma</span></div>
+          <div class="section-b">
+            <div class="uptime-grid" id="uptimeGrid">
+              <div class="up-card"><div class="muted">Carregando monitores…</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-h"><h2>Top containers</h2></div>
+          <div class="section-b">
+            <table>
+              <thead><tr><th>Container</th><th>RAM</th><th></th><th>CPU</th></tr></thead>
+              <tbody id="containersBody"><tr><td colspan="4">Carregando…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="view kuma-view" id="view-kuma">
+      <div class="kuma-toolbar">
+        <span id="kumaStatus">Conectando ao Uptime Kuma…</span>
+        <span>mesmo login do monitor · sem senha extra</span>
+      </div>
+      <iframe id="kumaFrame" title="Uptime Kuma" src="about:blank"></iframe>
+    </section>
+  </div>
 
   <script>
-    const state = { netHistory: [], pgHistory: [] };
+    const $ = (id) => document.getElementById(id);
+    let kumaReady = false;
+    let kumaLoading = false;
 
-    function $(id) { return document.getElementById(id); }
-
-    function setBar(id, pct) {
-      const el = $(id);
-      const value = Math.max(0, Math.min(100, Number(pct) || 0));
-      el.classList.remove("warn", "danger");
-      if (value >= 90) el.classList.add("danger");
-      else if (value >= 75) el.classList.add("warn");
-      el.querySelector("i").style.width = value.toFixed(1) + "%";
-      return value;
+    function setTone(el, pct) {
+      el.classList.remove("ok", "warn", "bad");
+      if (pct >= 90) el.classList.add("bad");
+      else if (pct >= 75) el.classList.add("warn");
+      else el.classList.add("ok");
     }
 
     function fmtBytes(n) {
       if (!Number.isFinite(n)) return "—";
-      const units = ["B", "KiB", "MiB", "GiB", "TiB"];
+      const u = ["B", "KiB", "MiB", "GiB", "TiB"];
       let v = n, i = 0;
-      while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
-      return v.toFixed(i === 0 ? 0 : 1) + " " + units[i];
+      while (v >= 1024 && i < u.length - 1) { v /= 1024; i++; }
+      return v.toFixed(i ? 1 : 0) + " " + u[i];
     }
 
     function fmtRate(n) {
       if (!Number.isFinite(n)) return "—";
-      const abs = Math.abs(n);
-      if (abs < 1024) return n.toFixed(0) + " B/s";
-      if (abs < 1024 * 1024) return (n / 1024).toFixed(1) + " KiB/s";
+      const a = Math.abs(n);
+      if (a < 1024) return n.toFixed(0) + " B/s";
+      if (a < 1024 * 1024) return (n / 1024).toFixed(1) + " KiB/s";
       return (n / (1024 * 1024)).toFixed(2) + " MiB/s";
     }
 
@@ -265,205 +253,196 @@
       return api("/api/v1/data?chart=" + encodeURIComponent(chart) + "&after=" + after + "&points=" + points + "&format=json");
     }
 
-    function latest(chartJson, label) {
-      const idx = (chartJson.labels || []).indexOf(label);
+    function latest(chart, label) {
+      const idx = (chart.labels || []).indexOf(label);
       if (idx < 0) return null;
-      const row = chartJson.data?.[0];
-      return row ? row[idx] : null;
+      return chart.data?.[0] ? chart.data[0][idx] : null;
     }
 
-    function sumLabels(chartJson, labels) {
-      return labels.reduce((acc, label) => acc + (Number(latest(chartJson, label)) || 0), 0);
+    function sumAll(chart) {
+      const row = chart.data?.[0] || [];
+      return (chart.labels || []).slice(1).reduce((a, _, i) => a + (Number(row[i + 1]) || 0), 0);
     }
 
-    function sumAllDimensions(chartJson) {
-      const labels = chartJson.labels || [];
-      const row = chartJson.data?.[0] || [];
-      return labels.slice(1).reduce((acc, _, i) => acc + (Number(row[i + 1]) || 0), 0);
-    }
-
-    function labelValue(chartJson, candidates) {
-      for (const name of candidates) {
-        const value = latest(chartJson, name);
-        if (value != null) return Number(value) || 0;
-      }
-      return 0;
-    }
-
-    function drawSpark(svgId, values, color) {
-      const svg = $(svgId);
+    function drawSpark(id, values, color) {
+      const svg = $(id);
+      const w = svg.viewBox.baseVal.width || 600;
+      const h = svg.viewBox.baseVal.height || 120;
       if (!values.length) { svg.innerHTML = ""; return; }
-      const w = svg.viewBox.baseVal.width || 200;
-      const h = svg.viewBox.baseVal.height || 54;
       const min = Math.min(...values);
       const max = Math.max(...values);
       const span = Math.max(max - min, 0.0001);
       const pts = values.map((v, i) => {
         const x = (i / Math.max(values.length - 1, 1)) * w;
-        const y = h - ((v - min) / span) * (h - 6) - 3;
+        const y = h - ((v - min) / span) * (h - 10) - 5;
         return x.toFixed(1) + "," + y.toFixed(1);
       }).join(" ");
-      svg.innerHTML = '<polyline fill="none" stroke="' + color + '" stroke-width="2" points="' + pts + '" />';
+      const area = values.map((v, i) => {
+        const x = (i / Math.max(values.length - 1, 1)) * w;
+        const y = h - ((v - min) / span) * (h - 10) - 5;
+        return x.toFixed(1) + "," + y.toFixed(1);
+      });
+      const poly = "0," + h + " " + area.join(" ") + " " + w + "," + h;
+      svg.innerHTML =
+        '<polygon fill="' + color + '22" points="' + poly + '"></polygon>' +
+        '<polyline fill="none" stroke="' + color + '" stroke-width="2" points="' + pts + '"></polyline>';
     }
 
-    async function loadContainers(charts) {
-      const names = Object.keys(charts)
+    async function loadContainers(chartMap) {
+      const names = Object.keys(chartMap)
         .filter((k) => /^cgroup_[^.]+\.mem_usage$/.test(k))
-        .map((k) => k.slice("cgroup_".length, -".mem_usage".length))
-        .filter((n) => !n.includes("docker") && n !== "systemd");
-
+        .map((k) => k.slice(7, -10))
+        .filter((n) => n && !n.includes("docker"));
       const rows = await Promise.all(names.map(async (name) => {
         try {
           const [mem, cpu] = await Promise.all([
             chartData("cgroup_" + name + ".mem_usage", -1, 1),
             chartData("cgroup_" + name + ".cpu", -1, 1).catch(() => null),
           ]);
-          const ram = Number(latest(mem, "ram")) || Number(sumLabels(mem, mem.labels?.slice(1) || [])) || 0;
-          let cpuPct = 0;
-          if (cpu) {
-            const labels = cpu.labels || [];
-            const row = cpu.data?.[0] || [];
-            cpuPct = labels.slice(1).reduce((a, _, i) => a + (Number(row[i + 1]) || 0), 0);
-          }
+          const ram = Number(latest(mem, "ram")) || sumAll(mem);
+          const cpuPct = cpu ? sumAll(cpu) : 0;
           return { name, ram, cpuPct };
-        } catch {
-          return null;
-        }
+        } catch { return null; }
       }));
+      return rows.filter(Boolean).sort((a, b) => b.ram - a.ram).slice(0, 10);
+    }
 
-      return rows
-        .filter(Boolean)
-        .sort((a, b) => b.ram - a.ram)
-        .slice(0, 12);
+    async function loadUptime() {
+      try {
+        const cfg = await api("/kuma-config.php");
+        const results = (cfg.monitors || []).map((m) => ({
+          ...m,
+          state: Number(m.status) === 1 ? "up" : Number(m.status) === 0 ? "down" : "pending",
+        }));
+        if (!results.length) {
+          $("uptimeGrid").innerHTML = '<div class="up-card">Nenhum monitor cadastrado no Kuma.</div>';
+          $("upText").textContent = "0/0";
+          return;
+        }
+        const ok = results.filter((r) => r.state === "up").length;
+        $("upText").textContent = ok + "/" + results.length;
+        $("upSub").textContent = "online agora";
+        setTone($("upStat"), ok === results.length ? 10 : ok === 0 ? 95 : 80);
+        $("uptimeGrid").innerHTML = results.map((r) =>
+          '<div class="up-card"><div class="row"><div class="name">' + r.name +
+          '</div><span class="badge ' + r.state + '">' + r.state.toUpperCase() +
+          '</span></div><small style="color:var(--muted)">' + (r.url || "") + "</small></div>"
+        ).join("");
+      } catch (e) {
+        $("uptimeGrid").innerHTML = '<div class="up-card">Status Kuma indisponível: ' + e.message + "</div>";
+      }
     }
 
     async function refresh() {
       try {
-        const [ram, cpu, disk, charts] = await Promise.all([
+        const [ram, cpu, disk, load, charts] = await Promise.all([
           chartData("system.ram", -1, 1),
-          chartData("system.cpu", -1, 1),
+          chartData("system.cpu", -90, 45),
           chartData("disk_space./", -1, 1),
+          chartData("system.load", -1, 1),
           api("/api/v1/charts"),
         ]);
+        const map = charts.charts || charts;
 
-        const free = labelValue(ram, ["free"]);
-        const used = labelValue(ram, ["used"]);
-        const cached = labelValue(ram, ["cached"]);
-        const buffers = labelValue(ram, ["buffers"]);
+        const free = Number(latest(ram, "free")) || 0;
+        const used = Number(latest(ram, "used")) || 0;
+        const cached = Number(latest(ram, "cached")) || 0;
+        const buffers = Number(latest(ram, "buffers")) || 0;
         const total = free + used + cached + buffers;
-        const usedPct = total > 0 ? (used / total) * 100 : 0;
-        $("ramText").textContent = usedPct.toFixed(1) + "%";
-        $("ramSub").textContent = fmtBytes(used * 1024 * 1024) + " de " + fmtBytes(total * 1024 * 1024);
-        setBar("ramBar", usedPct);
+        const ramPct = total ? (used / total) * 100 : 0;
+        $("ramText").textContent = ramPct.toFixed(1) + "%";
+        $("ramSub").textContent = fmtBytes(used * 1024 * 1024) + " / " + fmtBytes(total * 1024 * 1024);
+        setTone($("ramStat"), ramPct);
 
-        // Netdata system.cpu já vem sem idle: soma das dimensões = % usado
-        const cpuPct = Math.max(0, Math.min(100, sumAllDimensions(cpu)));
-        $("cpuText").textContent = cpuPct.toFixed(1) + "%";
-        $("cpuSub").textContent = "uso total do host";
-        setBar("cpuBar", cpuPct);
+        const cpuSeries = (cpu.data || []).slice().reverse().map((row) =>
+          (cpu.labels || []).slice(1).reduce((a, _, i) => a + (Number(row[i + 1]) || 0), 0)
+        );
+        const cpuNow = cpuSeries[cpuSeries.length - 1] || 0;
+        $("cpuText").textContent = cpuNow.toFixed(1) + "%";
+        $("cpuSub").textContent = "uso total";
+        setTone($("cpuStat"), cpuNow);
+        drawSpark("cpuSpark", cpuSeries, "#3b82f6");
 
-        const avail = labelValue(disk, ["avail"]);
-        const usedDisk = labelValue(disk, ["used"]);
-        const reserved = labelValue(disk, ["reserved for root", "reserved_for_root"]);
+        const avail = Number(latest(disk, "avail")) || 0;
+        const usedDisk = Number(latest(disk, "used")) || 0;
+        const reserved = Number(latest(disk, "reserved for root")) || 0;
         const diskTotal = avail + usedDisk + reserved;
-        const diskPct = diskTotal > 0 ? (usedDisk / diskTotal) * 100 : 0;
+        const diskPct = diskTotal ? (usedDisk / diskTotal) * 100 : 0;
         $("diskText").textContent = diskPct.toFixed(1) + "%";
-        // disk_space do Netdata reporta em GiB
-        $("diskSub").textContent = usedDisk.toFixed(1) + " GiB de " + diskTotal.toFixed(1) + " GiB";
-        setBar("diskBar", diskPct);
+        $("diskSub").textContent = usedDisk.toFixed(1) + " / " + diskTotal.toFixed(1) + " GiB";
+        setTone($("diskStat"), diskPct);
 
-        // Network: prefer physical iface; fallback eth0/ens
-        const netChart = Object.keys(charts.charts || charts)
-          .find((k) => /^net\.(eth0|ens|enp)/.test(k)) || "system.net";
-        try {
-          const net = await chartData(netChart.replace(/^net\./, "net."), -60, 30).catch(async () => {
-            const key = Object.keys(charts.charts || charts).find((k) => k.startsWith("net.") && !k.includes("docker"));
-            return key ? chartData(key, -60, 30) : null;
-          });
-          if (net) {
-            const received = (net.data || []).map((row) => Math.abs(Number(row[1]) || 0));
-            const sent = (net.data || []).map((row) => Math.abs(Number(row[2]) || 0));
-            const lastIn = received[0] || 0;
-            const lastOut = sent[0] || 0;
-            const totalRate = lastIn + lastOut;
-            state.netHistory = [totalRate, ...state.netHistory].slice(0, 30).reverse();
-            // rebuild chronologically
-            const series = (net.data || []).slice().reverse().map((row) => Math.abs(Number(row[1]) || 0) + Math.abs(Number(row[2]) || 0));
-            $("netText").textContent = fmtRate(series[series.length - 1] || 0);
-            $("netSub").textContent = "↓ " + fmtRate(lastIn) + " · ↑ " + fmtRate(lastOut);
-            drawSpark("netSpark", series, "#38bdf8");
-          }
-        } catch (_) { /* ignore */ }
+        const load1 = Number(latest(load, "load1")) || 0;
+        $("loadText").textContent = load1.toFixed(2);
+        $("loadSub").textContent = "load average";
+        setTone($("loadStat"), Math.min(100, load1 * 40));
 
-        // Postgres
-        const chartMap = charts.charts || charts;
-        if (chartMap["postgres_local.connections_utilization"] || chartMap["postgres_local.connections_usage"]) {
-          try {
-            const conn = await chartData("postgres_local.connections_usage", -1, 1);
-            const usedConn = Number(latest(conn, "used")) || sumLabels(conn, (conn.labels || []).slice(1));
-            $("pgConnText").textContent = String(Math.round(usedConn));
-            $("pgConnSub").textContent = "conexões em uso";
-          } catch (_) {}
-        }
-        if (chartMap["postgres_local.db_empresa_size"]) {
-          try {
-            const size = await chartData("postgres_local.db_empresa_size", -1, 1);
-            const bytes = (Number(latest(size, "size")) || sumLabels(size, (size.labels || []).slice(1))) * 1024 * 1024;
-            // netdata often reports MiB already in some charts; keep robust
-            const raw = Number(latest(size, "size")) || 0;
-            $("pgSizeText").textContent = fmtBytes(raw > 100000 ? raw : raw * 1024 * 1024);
-            $("pgSizeSub").textContent = "db empresa";
-          } catch (_) {}
-        }
-        if (chartMap["postgres_local.db_empresa_transactions_rate"]) {
-          try {
-            const tx = await chartData("postgres_local.db_empresa_transactions_rate", -120, 40);
-            const series = (tx.data || []).slice().reverse().map((row) => {
-              return (tx.labels || []).slice(1).reduce((a, _, i) => a + Math.abs(Number(row[i + 1]) || 0), 0);
-            });
-            const last = series[series.length - 1] || 0;
-            $("pgTxSub").textContent = last.toFixed(2) + " txn/s agora";
-            drawSpark("pgSpark", series, "#2dd4bf");
-          } catch (_) {}
+        const netKey = Object.keys(map).find((k) => /^net\.(eth|ens|enp)/.test(k));
+        if (netKey) {
+          const net = await chartData(netKey, -90, 45);
+          const series = (net.data || []).slice().reverse().map((row) =>
+            Math.abs(Number(row[1]) || 0) + Math.abs(Number(row[2]) || 0)
+          );
+          const now = series[series.length - 1] || 0;
+          $("netText").textContent = fmtRate(now);
+          $("netSub").textContent = netKey.replace("net.", "");
+          drawSpark("netSpark", series, "#22d3ee");
         }
 
-        const top = await loadContainers(chartMap);
-        const body = $("containersBody");
-        if (!top.length) {
-          body.innerHTML = '<tr><td colspan="4" class="muted">Nenhum container encontrado</td></tr>';
-        } else {
-          const maxRam = Math.max(...top.map((t) => t.ram), 1);
-          body.innerHTML = top.map((t) => {
-            const pct = (t.ram / maxRam) * 100;
-            return '<tr>' +
-              '<td class="name">' + t.name + '</td>' +
-              '<td class="mono">' + fmtBytes(t.ram * 1024 * 1024) + '</td>' +
-              '<td><div class="bar" style="margin:0"><i style="width:' + pct.toFixed(1) + '%"></i></div></td>' +
-              '<td class="mono">' + t.cpuPct.toFixed(1) + '%</td>' +
-              '</tr>';
-          }).join("");
-        }
+        const top = await loadContainers(map);
+        const maxRam = Math.max(...top.map((t) => t.ram), 1);
+        $("containersBody").innerHTML = top.map((t) =>
+          "<tr><td>" + t.name + "</td><td class='mono'>" + fmtBytes(t.ram * 1024 * 1024) +
+          "</td><td><div class='bar'><i style='width:" + ((t.ram / maxRam) * 100).toFixed(1) +
+          "%'></i></div></td><td class='mono'>" + t.cpuPct.toFixed(1) + "%</td></tr>"
+        ).join("") || "<tr><td colspan='4'>Sem containers</td></tr>";
 
         $("healthDot").className = "dot ok";
         $("healthText").textContent = "ao vivo";
+        $("updatedAt").textContent = new Date().toLocaleTimeString("pt-BR");
         $("errorBox").classList.remove("show");
-        $("updatedAt").textContent = "atualizado " + new Date().toLocaleTimeString("pt-BR");
       } catch (err) {
         $("healthDot").className = "dot bad";
         $("healthText").textContent = "falha";
-        $("errorBox").textContent = "Não consegui ler as métricas: " + err.message;
+        $("errorBox").textContent = String(err.message || err);
         $("errorBox").classList.add("show");
       }
     }
 
-    function tickClock() {
-      $("clock").textContent = new Date().toLocaleTimeString("pt-BR", { hour12: false });
+    async function openKuma() {
+      if (kumaReady || kumaLoading) return;
+      kumaLoading = true;
+      $("kumaStatus").textContent = "Autenticando no Kuma…";
+      try {
+        const cfg = await api("/kuma-config.php");
+        $("kumaFrame").src = cfg.ssoUrl;
+        $("kumaStatus").textContent = "Uptime Kuma embutido";
+        kumaReady = true;
+      } catch (e) {
+        $("kumaStatus").textContent = "Falha ao abrir Kuma: " + e.message;
+      } finally {
+        kumaLoading = false;
+      }
     }
 
-    tickClock();
-    setInterval(tickClock, 1000);
+    document.querySelectorAll(".tab").forEach((tab) => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("active", t === tab));
+        document.querySelectorAll(".view").forEach((v) => v.classList.remove("active"));
+        $("view-" + tab.dataset.view).classList.add("active");
+        if (tab.dataset.view === "kuma") openKuma();
+      });
+    });
+
+    function tick() {
+      $("clock").textContent = new Date().toLocaleTimeString("pt-BR", { hour12: false });
+    }
+    tick();
+    setInterval(tick, 1000);
     refresh();
+    loadUptime();
     setInterval(refresh, 5000);
+    setInterval(loadUptime, 30000);
   </script>
 </body>
 </html>
